@@ -28,8 +28,6 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.fusesource.jansi.AnsiConsole;
-
 public class Logger {
 
 	private PrintWriter pw;
@@ -171,6 +169,5 @@ public class Logger {
 	public void close() {
 		pw.close();
 		pw = null;
-		AnsiConsole.systemUninstall();
 	}
 }
