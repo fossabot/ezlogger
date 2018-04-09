@@ -1,0 +1,1 @@
+typeSearchIndex = [{"p":"com.limelion.logger","l":"Logger"},{"p":"com.limelion.logger","l":"Logger.LogParams"}]
