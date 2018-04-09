@@ -30,28 +30,79 @@ import java.util.Date;
 import java.util.HashMap;
 
 /**
- * <p>A customizable logging class suitable to your needs.
-			What can be configured right now :</p>
-		<ul>
-			<li>header</li>
-			<li>name (in brackets : [name])</li>
-			<li>do print datetime ?</li>
-			<li>print header ?</li>
-			<li>log level (info, debug, err)</li>
-			<li>do print debug messages ?</li>
-			<li>do print to console ?</li>
-			<li>do print to file ?</li>
-			<li>do print line descriptor ?</li>
-		</ul>
  * <p>
- * Available contructors :</p>
- * 	<ul>
- * 		<li><code>Logger(String name, String header)</code></li>
- * 		<li><code>Logger(String name, String header, PrintStream out, PrintStream err)</code></li>
- * 		<li><code>Logger(String name, String header, PrintStream out, PrintStream err, boolean printDebug, boolean printDate, boolean printToConsole, boolean printToFile, boolean printLineDescriptor, boolean printHeader)</code></li>
- * 		<li><code>Logger.newLogger(String name, String header, HashMap&lt;LogParams, Object&gt; params)</code></li>
- * 	</ul>
- * 
+ * A customizable logging class suitable to your needs. What can be configured
+ * right now :
+ * </p>
+ *
+ * <table>
+ * <tr>
+ * <th>Parameter</th>
+ * <th>Type</th>
+ * <th>Default</th>
+ * </tr>
+ * <tr>
+ * <td>name</td>
+ * <td>String</td>
+ * <td>""</td>
+ * </tr>
+ * <tr>
+ * <td>header</td>
+ * <td>String</td>
+ * <td>""</td>
+ * </tr>
+ * <tr>
+ * <td>OUT</td>
+ * <td>PrintStream</td>
+ * <td>System.out</td>
+ * </tr>
+ * <tr>
+ * <td>ERR</td>
+ * <td>PrintStream</td>
+ * <td>System.err</td>
+ * </tr>
+ * <tr>
+ * <td>PRINTDEBUG</td>
+ * <td>boolean</td>
+ * <td>false</td>
+ * </tr>
+ * <tr>
+ * <td>PRINTNAME</td>
+ * <td>boolean</td>
+ * <td>true</td>
+ * </tr>
+ * <tr>
+ * <td>PRINTHEADER</td>
+ * <td>boolean</td>
+ * <td>true</td>
+ * </tr>
+ * <tr>
+ * <td>PRINTDATE</td>
+ * <td>boolean</td>
+ * <td>true</td>
+ * </tr>
+ * <tr>
+ * <td>PRINTLINEDESCRIPTOR</td>
+ * <td>boolean</td>
+ * <td>true</td>
+ * </tr>
+ * <tr>
+ * <td>PRINTCONSOLE</td>
+ * <td>boolean</td>
+ * <td>true</td>
+ * </tr>
+ * <tr>
+ * <td>PRINTFILE</td>
+ * <td>boolean</td>
+ * <td>true</td>
+ * </tr>
+ * <tr>
+ * <td>LOGFILE</td>
+ * <td>File</td>
+ * <td>"{rootdir}/logs/{name}_dd-MM-yyyy_HH-mm-ss.log"</td>
+ * </tr>
+ * </table>
+ *
  * @author LimelioN/LimeiloN
  * @version 2.0
  * @see LogParams
@@ -59,43 +110,41 @@ import java.util.HashMap;
 public class Logger {
 
 	/**
-	 * <p>An enum containing all the possible parameters.
-	 * Use it like this :
-	 * <code>
-	 * HashMap&lt;LogParams, Object&gt; lp = new HashMap&lt;LogParams, Object&gt;();
-	 * lp.put(LogParams.DEBUG, true);
-	 * Logger log = new Logger("LoggerTest", "LoggerTest - v0.1", lp);
-	 * </code>
+	 * <p>
+	 * An enum containing all the possible parameters. Use it like this :
+	 * <pre>
+	 * {@code
+	 * 	HashMap<LogParams, Object> lp = new HashMap<LogParams, Object>();
+	 * 	lp.put(LogParams.DEBUG, true);
+	 * 	Logger log = new Logger("LoggerTest", "LoggerTest - v0.1", lp);
+	 * }
+	 * </pre>
 	 * </p>
+	 * 
 	 * @see Logger
 	 * @author LimelioN/LimeiloN
 	 * @since 2.0
 	 */
 	public enum LogParams {
-		PRINTLINEDESCRIPTOR,
-		OUT, 
-		ERR, 
-		PRINTDEBUG, 
-		PRINTDATE, 
-		PRINTCONSOLE, 
-		PRINTFILE,
-		PRINTHEADER;
+		PRINTLINEDESCRIPTOR, OUT, ERR, PRINTDEBUG, PRINTDATE, PRINTCONSOLE, PRINTFILE, PRINTHEADER, PRINTNAME, LOGFILE;
 	}
 
 	private PrintWriter pw;
 	private PrintStream out = System.out;
 	private PrintStream err = System.err;
-	
+
 	private String name = "";
 	private String header = "";
-	
+
 	private final String baseLineDescriptor = "%s%s%s%s%n";
-	
+
 	private String baseLogName;
 	private String dateMarker;
 	private String finalLogName;
-	
+	private File logfile;
+
 	private boolean printDate = true;
+	private boolean printName = true;
 	private boolean printDebug = false;
 	private boolean printToConsole = true;
 	private boolean printToFile = true;
@@ -103,11 +152,22 @@ public class Logger {
 
 	private Date d;
 	private SimpleDateFormat sdf;
+
 	/**
+	 * <p>
 	 * Cleaner way to instantiate Logger with a HashMap containing parameters
-	 * @param name String
-	 * @param header String - a header to show at start
-	 * @param params HashMap&lt;LogParams, Object&gt; containing parameters values
+	 * </p>
+	 * <p>
+	 * If 'params' parameter is null, the default parameters are used, see
+	 * {@link com.limelion.logger.Logger}
+	 * </p>
+	 * 
+	 * @param name
+	 *            String
+	 * @param header
+	 *            String - a header to show at start
+	 * @param params
+	 *            HashMap&lt;LogParams, Object&gt; containing parameters values
 	 * @return a new Logger instance
 	 * @see Logger
 	 * @see LogParams
@@ -122,7 +182,9 @@ public class Logger {
 		boolean printFile_ = true;
 		boolean printHeader_ = true;
 		boolean printLineDescriptor_ = true;
-		
+		boolean printName_ = true;
+		File logfile_ = null;
+
 		for (LogParams key : params.keySet()) {
 			switch (key) {
 			case OUT:
@@ -149,17 +211,24 @@ public class Logger {
 			case PRINTHEADER:
 				printHeader_ = (boolean) params.get(key);
 				break;
+			case LOGFILE:
+				logfile_ = (File) params.get(key);
+				break;
+			case PRINTNAME:
+				printName_ = (boolean) params.get(key);
+				break;
 			default:
 				System.err.println(
 						"EzLogger : Unrecognized key or unimplemented ! Logger.java @ Logger::Logger(HashMap<Keys, Object> params)");
 				break;
 			}
 		}
-		return new Logger(name, header, psout_, pserr_, printDebug_, printDate_, printConsole_, printFile_, printLineDescriptor_, printHeader_);
+		return new Logger(name, header, psout_, pserr_, printDebug_, printDate_, printConsole_, printFile_,
+				printLineDescriptor_, printHeader_, printName_, logfile_);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param name
 	 * @param header
 	 * @param out
@@ -174,8 +243,57 @@ public class Logger {
 	 * @see Logger
 	 */
 	public Logger(String name, String header, PrintStream out, PrintStream err, boolean printDebug, boolean printDate,
-			boolean printToConsole, boolean printToFile, boolean printLineDescriptor, boolean printHeader) {
+			boolean printToConsole, boolean printToFile, boolean printLineDescriptor, boolean printHeader,
+			boolean printName) {
+		this(name, header, out, err, printDebug, printDate, printToConsole, printToFile, printLineDescriptor,
+				printHeader, printName, null);
+	}
 
+	/**
+	 *
+	 * @param name
+	 * @param header
+	 * @param out
+	 * @param err
+	 *
+	 * @since 1.0
+	 * @see Logger
+	 */
+	public Logger(String name, String header, PrintStream out, PrintStream err) {
+		this(name, header, out, err, false, true, true, true, true, true, true);
+	}
+
+	/**
+	 *
+	 * @param name
+	 * @param header
+	 *
+	 * @since 1.0
+	 * @see Logger
+	 */
+	public Logger(String name, String header) {
+		this(name, header, System.out, System.err);
+	}
+
+	/**
+	 * @param name
+	 * @param header
+	 * @param out
+	 * @param err
+	 * @param printDebug
+	 * @param printDate
+	 * @param printToConsole
+	 * @param printToFile
+	 * @param printLineDescriptor
+	 * @param printHeader
+	 * @param printName
+	 * @param logfile
+	 * @since 2.0
+	 * @see Logger
+	 */
+	public Logger(String name, String header, PrintStream out, PrintStream err, boolean printDebug, boolean printDate,
+			boolean printToConsole, boolean printToFile, boolean printLineDescriptor, boolean printHeader,
+			boolean printName, File logfile) {
 		this.printDebug = printDebug;
 		this.name = name;
 		this.out = out;
@@ -185,69 +303,59 @@ public class Logger {
 		this.printToConsole = printToConsole;
 		this.printToFile = printToFile;
 		this.printLineDescriptor = printLineDescriptor;
-		
+		this.logfile = logfile;
+		this.printName = printName;
+
 		if (!printLineDescriptor) {
 			this.printDate = false;
 		}
 
 		if (printToFile) {
-			baseLogName = "logs\\" + name;
-			File dir = new File("logs");
-			dir.mkdir();
+			if (logfile == null) {
+				baseLogName = "logs\\" + name;
+				File dir = new File("logs");
+				dir.mkdir();
 
-			sdf = new SimpleDateFormat("_dd-MM-yyyy_HH-mm-ss");
-			d = new Date();
-			dateMarker = sdf.format(d);
-			finalLogName = baseLogName + dateMarker + ".log";
+				sdf = new SimpleDateFormat("_dd-MM-yyyy_HH-mm-ss");
+				d = new Date();
+				dateMarker = sdf.format(d);
+				finalLogName = baseLogName + dateMarker + ".log";
 
-			File log = new File(finalLogName);
+				File log = new File(finalLogName);
 
-			System.out.println(finalLogName);
+				System.out.println(finalLogName);
 
-			try {
-				log.createNewFile();
-				pw = new PrintWriter(log);
-			} catch (IOException e) {
-				e.printStackTrace();
+				try {
+					log.createNewFile();
+					pw = new PrintWriter(log);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} else {
+				System.out.println(logfile.getPath());
+				try {
+					logfile.createNewFile();
+					pw = new PrintWriter(logfile);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-			if (printHeader)
-			pw.printf(this.header + "%n");
+
+			if (printHeader) {
+				pw.printf(this.header + "%n");
+			}
 		}
 
 		if (printToConsole) {
-			if (printHeader)
-			out.printf(this.header + "%n");
+			if (printHeader) {
+				out.printf(this.header + "%n");
+			}
 		}
-	}
-	
-	/**
-	 * 
-	 * @param name
-	 * @param header
-	 * @param out
-	 * @param err
-	 * 
-	 * @since 1.0
-	 * @see Logger
-	 */
-	public Logger(String name, String header, PrintStream out, PrintStream err) {
-		this(name, header, out, err, false, true, true, true, true, true);
-	}
-
-	/**
-	 * 
-	 * @param name
-	 * @param header
-	 * 
-	 * @since 1.0
-	 * @see Logger
-	 */
-	public Logger(String name, String header) {
-		this(name, header, System.out, System.err);
 	}
 
 	/**
 	 * Print given message to out PrintStream specified at initialization
+	 * 
 	 * @param info
 	 * @see Logger#out
 	 */
@@ -263,7 +371,9 @@ public class Logger {
 	}
 
 	/**
-	 * Print given message to err PrintStream specified at initialization, preceded by [Error]
+	 * Print given message to err PrintStream specified at initialization, preceded
+	 * by [Error]
+	 * 
 	 * @param error
 	 * @see Logger#err
 	 */
@@ -279,7 +389,9 @@ public class Logger {
 	}
 
 	/**
-	 * Print given message to out PrintStream specified at initialzation, preceded by [Debug]. Only prints if printDebug has been set to true.
+	 * Print given message to out PrintStream specified at initialzation, preceded
+	 * by [Debug]. Only prints if printDebug has been set to true.
+	 * 
 	 * @param debug
 	 * @see Logger#out
 	 * @see Logger#printDebug
@@ -302,37 +414,33 @@ public class Logger {
 		sdf = new SimpleDateFormat("HH:mm:ss");
 		return sdf.format(d);
 	}
-	
+
 	private String getPrintedDate() {
 		if (printLineDescriptor) {
-			if (printDate) {
-				return " - " + getFDate() + " ";
-			} else {
+			if (printDate)
+				return "- " + getFDate() + " ";
+			else
 				return "";
-			}
-		} else {
+		} else
 			return "";
-		}
 	}
-	
+
 	private String getPrintedLevel(String from) {
-		if (printLineDescriptor) {
+		if (printLineDescriptor)
 			return from + ": ";
-		} else {
+		else
 			return ": ";
-		}
 	}
-	
+
 	private String getPrintedName() {
-		if (printLineDescriptor) {
-			return "[" + name + "]";
-		} else {
-			return "";
-		}
+		if (printLineDescriptor && printName)
+			return "[" + name + "] ";
+		return "";
 	}
 
 	/**
 	 * Use this method to show or hide debug messages.
+	 * 
 	 * @param printDebug
 	 * @see Logger#printDebug
 	 */
@@ -341,8 +449,8 @@ public class Logger {
 	}
 
 	/**
-	 * Use this to close this Logger instance.
-	 * Will throw some exceptions if you reuse the closed object.
+	 * Use this to close this Logger instance. Will throw some exceptions if you
+	 * reuse the closed object.
 	 */
 	public void close() {
 		pw.close();
