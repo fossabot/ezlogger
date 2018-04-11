@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -104,7 +105,7 @@ import java.util.HashMap;
  * </table>
  *
  * @author LimelioN/LimeiloN
- * @version 2.0
+ * @version 2.2
  * @see LogParams
  */
 public class Logger {
@@ -128,6 +129,16 @@ public class Logger {
 	public enum LogParams {
 		PRINTLINEDESCRIPTOR, OUT, ERR, PRINTDEBUG, PRINTDATE, PRINTCONSOLE, PRINTFILE, PRINTHEADER, PRINTNAME, LOGFILE;
 	}
+	
+	/**
+	 * <p>All possible log level values</p>
+	 * @author LimelioN/LimeiloN
+	 * @since 2.2
+	 * @see Logger#log(String, LogLevel)
+	 */
+	public enum LogLevel {
+		INFO, DEBUG, ERR;
+	}
 
 	private PrintWriter pw;
 	private PrintStream out = System.out;
@@ -137,6 +148,7 @@ public class Logger {
 	private String header = "";
 
 	private final String baseLineDescriptor = "%s%s%s%s%n";
+	private final String formatLineDescriptor = "%s%s%s";
 
 	private String baseLogName;
 	private String dateMarker;
@@ -159,7 +171,7 @@ public class Logger {
 	 * </p>
 	 * <p>
 	 * If 'params' parameter is null, the default parameters are used, see
-	 * {@link com.limelion.logger.Logger}
+	 * {@link Logger}
 	 * </p>
 	 * 
 	 * @param name
@@ -228,45 +240,23 @@ public class Logger {
 	}
 
 	/**
-	 *
-	 * @param name
-	 * @param header
-	 * @param out
-	 * @param err
-	 * @param printDebug
-	 * @param printDate
-	 * @param printToConsole
-	 * @param printToFile
-	 * @param printLineDescriptor
-	 * @param printHeader
-	 * @since 1.0
-	 * @see Logger
-	 */
-	public Logger(String name, String header, PrintStream out, PrintStream err, boolean printDebug, boolean printDate,
-			boolean printToConsole, boolean printToFile, boolean printLineDescriptor, boolean printHeader,
-			boolean printName) {
-		this(name, header, out, err, printDebug, printDate, printToConsole, printToFile, printLineDescriptor,
-				printHeader, printName, null);
-	}
-
-	/**
-	 *
-	 * @param name
-	 * @param header
-	 * @param out
-	 * @param err
+	 * Create a new logger with some default values
+	 * @param name String
+	 * @param header String
+	 * @param out PrintStream
+	 * @param err PrintStream
 	 *
 	 * @since 1.0
 	 * @see Logger
 	 */
 	public Logger(String name, String header, PrintStream out, PrintStream err) {
-		this(name, header, out, err, false, true, true, true, true, true, true);
+		this(name, header, out, err, false, true, true, true, true, true, true, null);
 	}
 
 	/**
-	 *
-	 * @param name
-	 * @param header
+	 * Create a new logger with some default values
+	 * @param name String
+	 * @param header String
 	 *
 	 * @since 1.0
 	 * @see Logger
@@ -276,19 +266,20 @@ public class Logger {
 	}
 
 	/**
-	 * @param name
-	 * @param header
-	 * @param out
-	 * @param err
-	 * @param printDebug
-	 * @param printDate
-	 * @param printToConsole
-	 * @param printToFile
-	 * @param printLineDescriptor
-	 * @param printHeader
-	 * @param printName
-	 * @param logfile
-	 * @since 2.0
+	 * @param name String
+	 * @param header String
+	 * @param out PrintStream
+	 * @param err PrintStream
+	 * @param printDebug boolean
+	 * @param printDate boolean
+	 * @param printToConsole boolean
+	 * @param printToFile boolean
+	 * @param printLineDescriptor boolean
+	 * @param printHeader boolean
+	 * @param printName boolean
+	 * @param logfile File
+	 * 
+	 * @since 2.1
 	 * @see Logger
 	 */
 	public Logger(String name, String header, PrintStream out, PrintStream err, boolean printDebug, boolean printDate,
@@ -334,6 +325,7 @@ public class Logger {
 			} else {
 				System.out.println(logfile.getPath());
 				try {
+					new File(logfile.getParent()).mkdirs();
 					logfile.createNewFile();
 					pw = new PrintWriter(logfile);
 				} catch (IOException e) {
@@ -342,68 +334,193 @@ public class Logger {
 			}
 
 			if (printHeader) {
-				pw.printf(this.header + "%n");
+				pw.println(this.header);
 			}
 		}
 
 		if (printToConsole) {
 			if (printHeader) {
-				out.printf(this.header + "%n");
+				out.println(this.header);
 			}
 		}
 	}
-
+	
 	/**
-	 * Print given message to out PrintStream specified at initialization
+	 * Print <tt>text</tt> with given {@link LogLevel} <tt>level</tt>
+	 * @param text String, the text to print
+	 * @param level LogLevel, the level to use
+	 * @since 2.2
+	 * @see LogLevel
+	 */
+	public void log(String text, LogLevel level) {
+		switch (level) {
+		case INFO:
+			info(text);
+			break;
+		case DEBUG:
+			debug(text);
+			break;
+		case ERR:
+			err(text);
+			break;
+		default:
+			return;
+		}
+	}
+	
+	/**
+	 * Print <tt>text</tt> with given {@link LogLevel} <tt>level</tt> and format with <tt>args</tt>
+	 * @param text String, the text to print
+	 * @param level LogLevel, the level to use
+	 * @param args Object..., arguments to parse possible placeholders
+	 * @since 2.2
+	 * @see LogLevel
+	 */
+	public void log(String text, LogLevel level, Object... args) {
+		if (args == null) {
+			log(text, level);
+			return;
+		}
+		switch (level) {
+		case INFO:
+			info(text, args);
+			break;
+		case DEBUG:
+			debug(text, args);
+			break;
+		case ERR:
+			err(text, args);
+			break;
+		default:
+			return;
+		}
+	}
+	
+	/**
+	 * Print <tt>info</tt> with <tt>LogLevel.INFO</tt>
 	 * 
-	 * @param info
+	 * @param info String, the text to print
+	 * @since 1.0
 	 * @see Logger#out
+	 * @see LogLevel
 	 */
 	public void info(String info) {
 		if (printToConsole) {
-			out.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(""), info);
+			out.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(LogLevel.INFO), info);
 			out.flush();
 		}
 		if (printToFile) {
-			pw.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(""), info);
+			pw.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(LogLevel.INFO), info);
 			pw.flush();
 		}
 	}
+	
+	/**
+	 * Print <tt>info</tt> with <tt>LogLevel.INFO</tt> and parse possible placeholders with <tt>args</tt>
+	 * 
+	 * @param info String, the text to print
+	 * @param args Object..., arguments to parse possible placeholders
+	 * @since 2.2
+	 * @see Logger#out
+	 * @see LogLevel
+	 */
+	public void info(String info, Object... args) {
+		if (printToConsole) {
+			out.printf(formatLineDescriptor + info + "%n", formatArgs(LogLevel.INFO, args));
+			out.flush();
+		}
+		if (printToFile) {
+			pw.printf(formatLineDescriptor + info + "%n", formatArgs(LogLevel.INFO, args));
+			pw.flush();
+		}
+	}
+	
 
 	/**
-	 * Print given message to err PrintStream specified at initialization, preceded
-	 * by [Error]
+	 * Print <tt>error</tt> with <tt>LogLevel.ERR</tt>
 	 * 
-	 * @param error
+	 * @param error String, the text to print
+	 * @since 1.0
 	 * @see Logger#err
+	 * @see LogLevel
 	 */
 	public void err(String error) {
 		if (printToConsole) {
-			err.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel("[Error]"), error);
+			err.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(LogLevel.ERR), error);
 			err.flush();
 		}
 		if (printToFile) {
-			pw.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel("[Error]"), error);
+			pw.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(LogLevel.ERR), error);
+			pw.flush();
+		}
+	}
+	
+	/**
+	 * Print <tt>error</tt> with <tt>LogLevel.ERR</tt> and parse possible placeholders with <tt>args</tt>
+	 * 
+	 * @param error String, the text to print
+	 * @param args Object..., arguments to parse possible placeholders
+	 * @since 2.2
+	 * @see Logger#err
+	 * @see LogLevel
+	 */
+	public void err(String error, Object... args) {
+		if (args == null) {
+			err(error);
+			return;
+		}
+		if (printToConsole) {
+			err.printf(formatLineDescriptor + error + "%n", formatArgs(LogLevel.ERR, args));
+			err.flush();
+		}
+		if (printToFile) {
+			pw.printf(formatLineDescriptor + error + "%n", formatArgs(LogLevel.ERR, args));
 			pw.flush();
 		}
 	}
 
 	/**
-	 * Print given message to out PrintStream specified at initialzation, preceded
-	 * by [Debug]. Only prints if printDebug has been set to true.
+	 * Print <tt>debug</tt> with <tt>LogLevel.DEBUG</tt>
 	 * 
-	 * @param debug
+	 * @param debug String, the text to print
+	 * @since 1.0
 	 * @see Logger#out
-	 * @see Logger#printDebug
+	 * @see LogLevel
 	 */
 	public void debug(String debug) {
 		if (printDebug) {
 			if (printToConsole) {
-				out.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel("[Debug]"), debug);
+				out.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(LogLevel.DEBUG), debug);
 				out.flush();
 			}
 			if (printToFile) {
-				pw.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel("[Debug]"), debug);
+				pw.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(LogLevel.DEBUG), debug);
+				pw.flush();
+			}
+		}
+	}
+	
+	/**
+	 * Print <tt>debug</tt> with <tt>LogLevel.DEBUG</tt> and parse possible placeholders with <tt>args</tt>
+	 * 
+	 * @param debug String, the text to print
+	 * @param args Object..., arguments to parse possible placeholders
+	 * @since 2.2
+	 * @see Logger#out
+	 * @see LogLevel
+	 */
+	public void debug(String debug, Object... args) {
+		if (args == null) {
+			debug(debug);
+			return;
+		}
+		if (printDebug) {
+			if (printToConsole) {
+				out.printf(formatLineDescriptor + debug + "%n", formatArgs(LogLevel.DEBUG, args));
+				out.flush();
+			}
+			if (printToFile) {
+				pw.printf(formatLineDescriptor + debug + "%n", formatArgs(LogLevel.DEBUG, args));
 				pw.flush();
 			}
 		}
@@ -425,9 +542,18 @@ public class Logger {
 			return "";
 	}
 
-	private String getPrintedLevel(String from) {
+	private String getPrintedLevel(LogLevel level) {
 		if (printLineDescriptor)
-			return from + ": ";
+			switch (level) {
+			case INFO:
+				return ": ";
+			case DEBUG:
+				return "[Debug]: ";
+			case ERR:
+				return "[Error]: ";
+			default:
+				return ": ";
+			}
 		else
 			return ": ";
 	}
@@ -437,9 +563,20 @@ public class Logger {
 			return "[" + name + "] ";
 		return "";
 	}
+	
+	private Object[] formatArgs(LogLevel level, Object[] args) {
+		ArrayList<Object> list = new ArrayList<Object>();
+		list.add(getPrintedName());
+		list.add(getPrintedDate());
+		list.add(getPrintedLevel(level));
+		for (Object arg : args) {
+			list.add(arg);
+		}
+		return list.toArray(new Object[list.size()]);
+	}
 
 	/**
-	 * Use this method to show or hide debug messages.
+	 * Show or hide debug messages.
 	 * 
 	 * @param printDebug
 	 * @see Logger#printDebug
@@ -447,10 +584,22 @@ public class Logger {
 	public void setDebug(boolean printDebug) {
 		this.printDebug = printDebug;
 	}
+	
+	/**
+	 * 
+	 * @return the file where this logger object writes or null if printToFile has been set to false
+	 * @since 2.2
+	 */
+	public File getLogFile() {
+		return printToFile ? logfile : null;
+	}
 
 	/**
-	 * Use this to close this Logger instance. Will throw some exceptions if you
-	 * reuse the closed object.
+	 * Close this Logger instance. Will throw some exceptions if you
+	 * use the closed object.
+	 * 
+	 * @since 1.0
+	 * @see Logger
 	 */
 	public void close() {
 		pw.close();
