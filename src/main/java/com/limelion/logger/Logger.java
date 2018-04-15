@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C) 2018 LimelioN
+ * Copyright (C) 2018 LimelioN/LimeiloN <memorial.limelion@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -100,13 +100,14 @@ import java.util.HashMap;
  * <tr>
  * <td>LOGFILE</td>
  * <td>File</td>
- * <td>"{rootdir}/logs/{name}_dd-MM-yyyy_HH-mm-ss.log"</td>
+ * <td>"logs/name_dd-MM-yyyy_HH-mm-ss.log"</td>
  * </tr>
  * </table>
  *
- * @author LimelioN/LimeiloN
- * @version 2.2
+ * @author LimelioN/LimeiloN &lt;memorial.limelion@gmail.com&gt;
+ * @version 2.3
  * @see LogParams
+ * @see Logger#newLogger(String, String, HashMap)
  */
 public class Logger {
 
@@ -135,6 +136,9 @@ public class Logger {
 	 * @author LimelioN/LimeiloN
 	 * @since 2.2
 	 * @see Logger#log(String, LogLevel)
+	 * @see Logger#info(String, Object...)
+	 * @see Logger#debug(String, Object...)
+	 * @see Logger#err(String, Object...)
 	 */
 	public enum LogLevel {
 		INFO, DEBUG, ERR;
@@ -147,7 +151,6 @@ public class Logger {
 	private String name = "";
 	private String header = "";
 
-	private final String baseLineDescriptor = "%s%s%s%s%n";
 	private final String formatLineDescriptor = "%s%s%s";
 
 	private String baseLogName;
@@ -353,19 +356,7 @@ public class Logger {
 	 * @see LogLevel
 	 */
 	public void log(String text, LogLevel level) {
-		switch (level) {
-		case INFO:
-			info(text);
-			break;
-		case DEBUG:
-			debug(text);
-			break;
-		case ERR:
-			err(text);
-			break;
-		default:
-			return;
-		}
+		log(text, level, null);
 	}
 	
 	/**
@@ -377,10 +368,6 @@ public class Logger {
 	 * @see LogLevel
 	 */
 	public void log(String text, LogLevel level, Object... args) {
-		if (args == null) {
-			log(text, level);
-			return;
-		}
 		switch (level) {
 		case INFO:
 			info(text, args);
@@ -405,14 +392,19 @@ public class Logger {
 	 * @see LogLevel
 	 */
 	public void info(String info) {
-		if (printToConsole) {
-			out.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(LogLevel.INFO), info);
-			out.flush();
-		}
-		if (printToFile) {
-			pw.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(LogLevel.INFO), info);
-			pw.flush();
-		}
+		info(info, null);
+	}
+	
+	/**
+	 * Print a textual representation of <tt>info</tt> with <tt>LogLevel.INFO</tt>
+	 * 
+	 * @param info Object, the object to print
+	 * @since 2.3
+	 * @see Logger#out
+	 * @see LogLevel
+	 */
+	public void info(Object info) {
+		info(String.valueOf(info));
 	}
 	
 	/**
@@ -445,14 +437,19 @@ public class Logger {
 	 * @see LogLevel
 	 */
 	public void err(String error) {
-		if (printToConsole) {
-			err.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(LogLevel.ERR), error);
-			err.flush();
-		}
-		if (printToFile) {
-			pw.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(LogLevel.ERR), error);
-			pw.flush();
-		}
+		err(error, null);
+	}
+	
+	/**
+	 * Print a textual representation of <tt>error</tt> with <tt>LogLevel.ERROR</tt>
+	 * 
+	 * @param error Object, the object to print
+	 * @since 2.3
+	 * @see Logger#err
+	 * @see LogLevel
+	 */
+	public void err(Object error) {
+		err(String.valueOf(error));
 	}
 	
 	/**
@@ -465,10 +462,6 @@ public class Logger {
 	 * @see LogLevel
 	 */
 	public void err(String error, Object... args) {
-		if (args == null) {
-			err(error);
-			return;
-		}
 		if (printToConsole) {
 			err.printf(formatLineDescriptor + error + "%n", formatArgs(LogLevel.ERR, args));
 			err.flush();
@@ -488,16 +481,19 @@ public class Logger {
 	 * @see LogLevel
 	 */
 	public void debug(String debug) {
-		if (printDebug) {
-			if (printToConsole) {
-				out.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(LogLevel.DEBUG), debug);
-				out.flush();
-			}
-			if (printToFile) {
-				pw.printf(baseLineDescriptor, getPrintedName(), getPrintedDate(), getPrintedLevel(LogLevel.DEBUG), debug);
-				pw.flush();
-			}
-		}
+		debug(debug, null);
+	}
+	
+	/**
+	 * Print a textual representation of <tt>debug</tt> with <tt>LogLevel.DEBUG</tt>
+	 * 
+	 * @param debug Object, the object to print
+	 * @since 2.3
+	 * @see Logger#out
+	 * @see LogLevel
+	 */
+	public void debug(Object debug) {
+		debug(String.valueOf(debug));
 	}
 	
 	/**
@@ -510,10 +506,6 @@ public class Logger {
 	 * @see LogLevel
 	 */
 	public void debug(String debug, Object... args) {
-		if (args == null) {
-			debug(debug);
-			return;
-		}
 		if (printDebug) {
 			if (printToConsole) {
 				out.printf(formatLineDescriptor + debug + "%n", formatArgs(LogLevel.DEBUG, args));
@@ -569,6 +561,7 @@ public class Logger {
 		list.add(getPrintedName());
 		list.add(getPrintedDate());
 		list.add(getPrintedLevel(level));
+		if (args != null)
 		for (Object arg : args) {
 			list.add(arg);
 		}
@@ -580,6 +573,7 @@ public class Logger {
 	 * 
 	 * @param printDebug
 	 * @see Logger#printDebug
+	 * @since 1.0
 	 */
 	public void setDebug(boolean printDebug) {
 		this.printDebug = printDebug;
