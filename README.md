@@ -4,6 +4,7 @@ Java library, provide an easy logging interface.
 #### What ?
 A customizable logging class suitable to your needs.
 What can be configured right now :
+
 Parameter|Type|Default|Side Note
 ---------|----|-------|---------
 name|String|`""`|the text wich is printed in brackets at the beginning of each line
