@@ -29,7 +29,7 @@ Create a logger object in one line :
  Logger(String name, String header, PrintStream out, PrintStream err)
   || (name, header, out, err, false, true, true, true, true, true)
   \/
- Logger(String name, String header, PrintStream out, PrintStream err, boolean printDebug, boolean printDate, boolean printToConsole, boolean printToFile, boolean printLineDescriptor, boolean printHeader)
+ Logger(String name, String header, PrintStream out, PrintStream err, boolean doPrintDebug, boolean doPrintTime, boolean doPrintToConsole, boolean doPrintToFile, boolean doPrintLineHeading, boolean printHeader)
 */
 
 private static Logger log = new Logger("LoggerTest", "LoggerTest - v0.1");

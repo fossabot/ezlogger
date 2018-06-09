@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_ezlogger" default="compile.module.ezlogger">
+  <dirname property="module.ezlogger.basedir" file="${ant.file.module_ezlogger}"/>
+  
+  <property name="module.jdk.home.ezlogger" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.ezlogger" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.ezlogger" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.ezlogger" value="-encoding UTF-8 -source 10 -target 10 ${compiler.args}"/>
+  
+  <property name="ezlogger.output.dir" value="${module.ezlogger.basedir}/out/prod"/>
+  <property name="ezlogger.testoutput.dir" value="${module.ezlogger.basedir}/out/test"/>
+  
+  <path id="ezlogger.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="ezlogger.module.production.classpath">
+    <path refid="${module.jdk.classpath.ezlogger}"/>
+  </path>
+  
+  <path id="ezlogger.runtime.production.module.classpath">
+    <pathelement location="${ezlogger.output.dir}"/>
+  </path>
+  
+  <path id="ezlogger.module.classpath">
+    <pathelement location="${ezlogger.output.dir}"/>
+    <path refid="${module.jdk.classpath.ezlogger}"/>
+  </path>
+  
+  <path id="ezlogger.runtime.module.classpath">
+    <pathelement location="${ezlogger.testoutput.dir}"/>
+    <pathelement location="${ezlogger.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.ezlogger">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.ezlogger">
+    <patternset refid="excluded.from.module.ezlogger"/>
+  </patternset>
+  
+  <path id="ezlogger.module.sourcepath">
+    <dirset dir="${module.ezlogger.basedir}">
+      <include name="src/main/java"/>
+    </dirset>
+  </path>
+  
+  <path id="ezlogger.module.test.sourcepath">
+    <dirset dir="${module.ezlogger.basedir}">
+      <include name="src/test/java"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.ezlogger" depends="compile.module.ezlogger.production,compile.module.ezlogger.tests" description="Compile module ezLogger"/>
+  
+  <target name="compile.module.ezlogger.production" depends="register.custom.compilers" description="Compile module ezLogger; production classes">
+    <mkdir dir="${ezlogger.output.dir}"/>
+    <javac2 destdir="${ezlogger.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.ezlogger}/javac">
+      <compilerarg line="${compiler.args.ezlogger}"/>
+      <bootclasspath refid="ezlogger.module.bootclasspath"/>
+      <classpath refid="ezlogger.module.production.classpath"/>
+      <src refid="ezlogger.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.ezlogger"/>
+    </javac2>
+    
+    <copy todir="${ezlogger.output.dir}">
+      <fileset dir="${module.ezlogger.basedir}/src/main/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.ezlogger.tests" depends="register.custom.compilers,compile.module.ezlogger.production" description="compile module ezLogger; test classes" unless="skip.tests">
+    <mkdir dir="${ezlogger.testoutput.dir}"/>
+    <javac2 destdir="${ezlogger.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.ezlogger}/javac">
+      <compilerarg line="${compiler.args.ezlogger}"/>
+      <bootclasspath refid="ezlogger.module.bootclasspath"/>
+      <classpath refid="ezlogger.module.classpath"/>
+      <src refid="ezlogger.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.ezlogger"/>
+    </javac2>
+    
+    <copy todir="${ezlogger.testoutput.dir}">
+      <fileset dir="${module.ezlogger.basedir}/src/test/java">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.ezlogger" description="cleanup module">
+    <delete dir="${ezlogger.output.dir}"/>
+    <delete dir="${ezlogger.testoutput.dir}"/>
+  </target>
+</project>
