@@ -30,7 +30,7 @@ import java.io.IOException;
  * @see Logger
  * @since 3.0
  */
-class Builder {
+public class Builder {
 
     private boolean doPrintLineHeading = true;
     private boolean doPrintTime = true;
