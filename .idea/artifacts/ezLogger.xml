@@ -1,5 +1,5 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="ezLogger">
+  <artifact type="jar" build-on-make="true" name="ezLogger">
     <output-path>$PROJECT_DIR$/out/artifacts/ezLogger</output-path>
     <root id="archive" name="ezLogger.jar">
       <element id="module-output" name="ezLogger" />

@@ -24,7 +24,7 @@ package com.limelion.logger;
 import java.io.IOException;
 
 /**
- * Utility class to easily create and customize a new {@link Logger} object.
+ * Utility class to easily create and customize a new {@link Logger} object. Access with {@link Logger#builder()}
  *
  * @author LimelioN/LimeiloN &lt;memorial.limelion@gmail.com&gt;
  * @see Logger
@@ -32,9 +32,7 @@ import java.io.IOException;
  */
 public class Builder {
 
-    private boolean doPrintLineHeading = true;
-    private boolean doPrintTime = true;
-    private boolean doPrintName = true;
+    private boolean doPrintLineFmt = true;
 
     private boolean doPrintDebug = true;
     private boolean doPrintInfo = true;
@@ -43,15 +41,17 @@ public class Builder {
     private boolean doPrintToConsole = true;
     private boolean doPrintToFile = true;
 
-    private String baseLogFileName = "ezLogger";
+    private String fileNameFmt = "${name}_${datefmt(yyyyMMdd-HHmmss)}.log";
 
     private String name = "";
     private String header = "";
 
+    private String lineFmt = "[${name}] - ${fulltime} ${loglevel}: ";
+
     /**
-     * Accessible with {@link Logger#getBuilder()}
+     * Accessible with {@link Logger#builder()}
      *
-     * @see Logger#getBuilder()
+     * @see Logger#builder()
      */
     Builder() {
 
@@ -61,6 +61,7 @@ public class Builder {
      * Finally create a new Logger instance with all the customizations.
      *
      * @return a new Logger instance
+     *
      * @see Logger
      */
     public Logger build() {
@@ -72,39 +73,21 @@ public class Builder {
         }
     }
 
-    public String baseLogFileName() {
-        return baseLogFileName;
+    public String fileNameFmt() {
+        return fileNameFmt;
     }
 
-    public Builder baseLogFileName(String baseLogFileName) {
-        this.baseLogFileName = baseLogFileName;
+    public Builder fileNameFmt(String baseLogFileName) {
+        this.fileNameFmt = baseLogFileName;
         return this;
     }
 
-    public boolean doPrintLineHeading() {
-        return doPrintLineHeading;
+    public boolean doPrintLineFmt() {
+        return doPrintLineFmt;
     }
 
-    public Builder doPrintLineHeading(boolean doPrintLineHeading) {
-        this.doPrintLineHeading = doPrintLineHeading;
-        return this;
-    }
-
-    public boolean doPrintTime() {
-        return doPrintTime;
-    }
-
-    public Builder doPrintTime(boolean doPrintTime) {
-        this.doPrintTime = doPrintTime;
-        return this;
-    }
-
-    public boolean doPrintName() {
-        return doPrintName;
-    }
-
-    public Builder doPrintName(boolean doPrintName) {
-        this.doPrintName = doPrintName;
+    public Builder doPrintLineFmt(boolean doPrintLineFmt) {
+        this.doPrintLineFmt = doPrintLineFmt;
         return this;
     }
 
@@ -169,5 +152,14 @@ public class Builder {
     public Builder header(String header) {
         this.header = header;
         return this;
+    }
+
+    public Builder lineFmt(String lineFmt) {
+        this.lineFmt = lineFmt;
+        return this;
+    }
+
+    public String lineFmt() {
+        return lineFmt;
     }
 }
