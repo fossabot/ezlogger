@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FLimeiloN%2Fezlogger.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FLimeiloN%2Fezlogger?ref=badge_shield)
+
 ### ezLogger
 A highly customizable java logging library.
 
@@ -19,3 +21,7 @@ Javadoc is available online [here](https://limeilon.github.io/ezlogger/javadoc) 
 
 #### Warning
 The prebuilt releases library's jars are built with Java 10 compliance level.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FLimeiloN%2Fezlogger.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FLimeiloN%2Fezlogger?ref=badge_large)
